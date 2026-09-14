@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KYRUS YL MATH</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#0b1020;color:#eef2ff}
+.wrap{max-width:850px;margin:auto;padding:22px}h1{text-align:center;margin:8px 0 20px;color:#60a5fa}
+.card{background:#121a2d;border:1px solid #263453;border-radius:18px;padding:18px;margin:14px 0;box-shadow:0 10px 30px #0004}
+h2{margin-top:0}button,input,select{font:inherit}button{cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.lesson-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.lesson{padding:13px;border:1px solid #334155;border-radius:12px;background:#18233a;color:#fff;font-weight:700}
+.lesson.active{background:#2563eb;border-color:#60a5fa}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center}
+.stat{background:#18233a;padding:12px;border-radius:12px}.stat b{display:block;font-size:25px;color:#93c5fd}
+.question{font-size:22px;font-weight:700;min-height:90px;display:flex;align-items:center;justify-content:center;text-align:center}
+input{width:100%;padding:14px;border-radius:12px;border:1px solid #475569;background:#0f172a;color:#fff;outline:none}
+.row{display:flex;gap:10px;margin-top:10px}.row button{flex:1;padding:15px;min-height:50px;touch-action:manipulation;border:0;border-radius:12px;font-weight:800}
+.check{background:#22c55e;color:#052e16}.next{background:#3b82f6;color:#fff}.reset{background:#ef4444;color:#fff;padding:10px 16px;border:0;border-radius:10px;font-weight:800}
+.top{display:flex;justify-content:space-between;align-items:center}.feedback{text-align:center;min-height:28px;margin-top:12px;font-weight:800}
+.good{color:#4ade80}.bad{color:#fb7185}.muted{color:#94a3b8}
+.count{font-size:14px;color:#93c5fd;margin-top:8px}@media(max-width:550px){.wrap{padding:12px}.lesson-grid{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr 1fr}.question{font-size:19px;min-height:110px}.row{gap:8px}.row button{font-size:15px}.lesson{min-height:48px}}
+
+.num-keyboard{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
+.num-keyboard button{padding:13px 8px;min-height:48px;border:0;border-radius:10px;background:#1e293b;color:#fff;font-size:19px;font-weight:800;touch-action:manipulation}
+.num-keyboard button:active{transform:scale(.96)}
+.num-keyboard .special{background:#334155}
+@media(max-width:550px){.num-keyboard button{min-height:52px;font-size:20px}}
+</style>
+</head>
+<body><div class="wrap">
+<h1>🎯 KYRUS YL MATH</h1><div style="text-align:center;color:#94a3b8;font-size:13px;margin-top:-10px;margin-bottom:10px">📱 Bản tối ưu cho điện thoại</div>
+
+<div class="card">
+<div class="top"><h2>📚 Chọn đề bài</h2><button class="reset" onclick="resetGame()">🔄 Reset</button></div>
+<div class="lesson-grid">
+<button class="lesson active" data-type="all">🎯 Tất cả</button>
+<button class="lesson" data-type="derivative">📈 Đạo hàm</button>
+<button class="lesson" data-type="extremum">📉 Tìm cực trị / cực tiểu</button>
+<button class="lesson" data-type="basic">🔢 Toán cơ bản</button>
+</div>
+<div id="lessonInfo" class="count"></div>
+</div>
+
+<div class="stats">
+<div class="stat">Điểm<b id="score">0</b></div>
+<div class="stat">Streak<b id="streak">0</b></div>
+<div class="stat">Đúng<b id="correct">0</b></div>
+</div>
+
+<div class="card">
+<div id="progress" class="muted"></div>
+<div id="question" class="question"></div>
+<input id="answer" type="text" inputmode="text" enterkeyhint="done" autocapitalize="off" spellcheck="false" placeholder="Nhập đáp án..." autocomplete="off">
+<div id="keyboard" class="num-keyboard" aria-label="Bàn phím nhập toán">
+  <button type="button" onclick="keyInput('1')">1</button>
+  <button type="button" onclick="keyInput('2')">2</button>
+  <button type="button" onclick="keyInput('3')">3</button>
+  <button type="button" onclick="keyInput('+')">+</button>
+  <button type="button" onclick="keyInput('4')">4</button>
+  <button type="button" onclick="keyInput('5')">5</button>
+  <button type="button" onclick="keyInput('6')">6</button>
+  <button type="button" onclick="keyInput('-')">−</button>
+  <button type="button" onclick="keyInput('7')">7</button>
+  <button type="button" onclick="keyInput('8')">8</button>
+  <button type="button" onclick="keyInput('9')">9</button>
+  <button type="button" onclick="keyInput('^')">^</button>
+  <button type="button" onclick="keyInput('0')">0</button>
+  <button type="button" onclick="keyInput('.')">.</button>
+  <button type="button" onclick="keyInput('²')">x²</button>
+  <button type="button" class="special" onclick="keyBackspace()">⌫</button>
+</div>
+
+<div class="row"><button class="check" onclick="check()">✓ Kiểm tra</button><button class="next" onclick="next()">→ Câu tiếp</button></div>
+<div id="feedback" class="feedback"></div>
+</div>
+</div>
+
+<script>
+const derivativeProblems50=[{q:"Tính f'(x), biết f(x)=x²+2x-3",a:"2x+2",type:"derivative",d:"Đạo hàm"},{q:"Tính f'(x), biết f(x)=x²-5x+4",a:"2x-5",type:"derivative",d:"Đạo hàm"},{q:"Tính f'(x), biết f(x)=2x²+3x-1",a:"4x+3",type:"derivative",d:"Đạo hàm"},{q:"Tính f'(x), biết f(x)=3x²-2x+7",a:"6x-2",type:"derivative",d:"Đạo hàm"},{q:"Tính f'(x), biết f(x)=4x²+x-5",a:"8x+1",type:"derivative",d:"Đạo hàm"},{q:"Tính f'(x), biết f(x)=5x²-4x+2",a:"10x-4",type:"derivative",d:"Đạo hàm"},{q:"Tính f'(x), biết f(x)=6x²+3x+1",a:"12x+3",type:"derivative",d:"Đạo hàm"},{q:"Tính f'(x), biết f(x)=7x²-6x",a:"14x-6",type:"derivative",d:"Đạo hàm"},{q:"Tính f'(x), biết f(x)=8x²+2x-9",a:"16x+2",type:"derivative",d:"Đạo hàm"},{q:"Tính f'(x), biết f(x)=9x²-7x+4",a:"18x-7",type:"derivative",d:"Đạo hàm"},{q:"Tính f'(x), biết f(x)=x³+2x",a:"3x²+2",type:"derivative",d:"Đạo hàm"},{q:"Tính f'(x), biết f(x)=x³-3x²",a:"3x²-6x",type:"derivative",d:"Đạo hàm"},{q:"Tính f'(x), biết f(x)=2x³+x²-4",a:"6x²+2x",type:"derivative",d:"Đạo hàm"},{q:"Tính f'(x), biết f(x)=3x³-2x+1",a:"9x²-2",type:"derivative",d:"Đạo hàm"},{q:"Tính f'(x), biết f(x)=4x³+x-5",a:"12x²+1",type:"derivative",d:"Đạo hàm"},{q:"Tính f'(x), biết f(x)=5x³-3x²",a:"15x²-6x",type:"derivative",d:"Đạo hàm"},{q:"Tính f'(x), biết f(x)=x⁴+2x²",a:"4x³+4x",type:"derivative",d:"Đạo hàm"},{q:"Tính f'(x), biết f(x)=2x⁴-x²",a:"8x³-2x",type:"derivative",d:"Đạo hàm"},{q:"Tính f'(x), biết f(x)=3x⁴+5x",a:"12x³+5",type:"derivative",d:"Đạo hàm"},{q:"Tính f'(x), biết f(x)=x⁵-2x",a:"5x⁴-2",type:"derivative",d:"Đạo hàm"},{q:"Tính f'(x), biết f(x)=2x⁵+x³",a:"10x⁴+3x²",type:"derivative",d:"Đạo hàm"},{q:"Tính f'(x), biết f(x)=x²+3x+8",a:"2x+3",type:"derivative",d:"Đạo hàm"},{q:"Tính f'(x), biết f(x)=2x²-7x+6",a:"4x-7",type:"derivative",d:"Đạo hàm"},{q:"Tính f'(x), biết f(x)=3x²+8x-2",a:"6x+8",type:"derivative",d:"Đạo hàm"},{q:"Tính f'(x), biết f(x)=4x²-9x+1",a:"8x-9",type:"derivative",d:"Đạo hàm"},{q:"Tính f'(x), biết f(x)=5x²+6x+3",a:"10x+6",type:"derivative",d:"Đạo hàm"},{q:"Tính f'(x), biết f(x)=6x²-x+4",a:"12x-1",type:"derivative",d:"Đạo hàm"},{q:"Tính f'(x), biết f(x)=7x²+4x",a:"14x+4",type:"derivative",d:"Đạo hàm"},{q:"Tính f'(x), biết f(x)=8x²-5x+2",a:"16x-5",type:"derivative",d:"Đạo hàm"},{q:"Tính f'(x), biết f(x)=9x²+x-1",a:"18x+1",type:"derivative",d:"Đạo hàm"},{q:"Tính f'(x), biết f(x)=x³+3x²+2x",a:"3x²+6x+2",type:"derivative",d:"Đạo hàm"},{q:"Tính f'(x), biết f(x)=x³-2x²+x",a:"3x²-4x+1",type:"derivative",d:"Đạo hàm"},{q:"Tính f'(x), biết f(x)=2x³+4x²-3x",a:"6x²+8x-3",type:"derivative",d:"Đạo hàm"},{q:"Tính f'(x), biết f(x)=3x³-5x²+2x",a:"9x²-10x+2",type:"derivative",d:"Đạo hàm"},{q:"Tính f'(x), biết f(x)=4x³+2x²-x",a:"12x²+4x-1",type:"derivative",d:"Đạo hàm"},{q:"Tính f'(x), biết f(x)=5x³-x²+3",a:"15x²-2x",type:"derivative",d:"Đạo hàm"},{q:"Tính f'(x), biết f(x)=x⁴-4x³+2x",a:"4x³-12x²+2",type:"derivative",d:"Đạo hàm"},{q:"Tính f'(x), biết f(x)=2x⁴+3x³",a:"8x³+9x²",type:"derivative",d:"Đạo hàm"},{q:"Tính f'(x), biết f(x)=3x⁴-x³+x",a:"12x³-3x²+1",type:"derivative",d:"Đạo hàm"},{q:"Tính f'(x), biết f(x)=x⁵+3x⁴",a:"5x⁴+12x³",type:"derivative",d:"Đạo hàm"},{q:"Tính f'(x), biết f(x)=2x⁵-4x³+x",a:"10x⁴-12x²+1",type:"derivative",d:"Đạo hàm"},{q:"Tính f'(x), biết f(x)=3x⁵+x²",a:"15x⁴+2x",type:"derivative",d:"Đạo hàm"},{q:"Tính f'(x), biết f(x)=x⁶-2x²",a:"6x⁵-4x",type:"derivative",d:"Đạo hàm"},{q:"Tính f'(x), biết f(x)=2x⁶+x³",a:"12x⁵+3x²",type:"derivative",d:"Đạo hàm"},{q:"Tính f'(x), biết f(x)=x⁷-5x",a:"7x⁶-5",type:"derivative",d:"Đạo hàm"},{q:"Tính f'(x), biết f(x)=2x⁷+3x²",a:"14x⁶+6x",type:"derivative",d:"Đạo hàm"},{q:"Tính f'(x), biết f(x)=x⁸+x⁴",a:"8x⁷+4x³",type:"derivative",d:"Đạo hàm"},{q:"Tính f'(x), biết f(x)=3x⁸-2x²",a:"24x⁷-4x",type:"derivative",d:"Đạo hàm"},{q:"Tính f'(x), biết f(x)=x⁹-3x³",a:"9x⁸-9x²",type:"derivative",d:"Đạo hàm"}];
+const extremumProblems50=[{q:"Cho hàm số f(x)=x²-4x+1. Tìm hoành độ điểm cực trị.",a:"2",type:"extremum",d:"Cực trị & cực tiểu"},{q:"Cho hàm số f(x)=x²+6x+5. Tìm hoành độ điểm cực trị.",a:"-3",type:"extremum",d:"Cực trị & cực tiểu"},{q:"Cho hàm số f(x)=x²-8x+7. Tìm hoành độ điểm cực trị.",a:"4",type:"extremum",d:"Cực trị & cực tiểu"},{q:"Cho hàm số f(x)=x²+2x-3. Tìm hoành độ điểm cực trị.",a:"-1",type:"extremum",d:"Cực trị & cực tiểu"},{q:"Cho hàm số f(x)=x²-10x+9. Tìm hoành độ điểm cực trị.",a:"5",type:"extremum",d:"Cực trị & cực tiểu"},{q:"Cho hàm số f(x)=x²+4x+1. Tìm hoành độ điểm cực trị.",a:"-2",type:"extremum",d:"Cực trị & cực tiểu"},{q:"Cho hàm số f(x)=2x²-8x+3. Tìm hoành độ điểm cực trị.",a:"2",type:"extremum",d:"Cực trị & cực tiểu"},{q:"Cho hàm số f(x)=2x²+12x+7. Tìm hoành độ điểm cực trị.",a:"-3",type:"extremum",d:"Cực trị & cực tiểu"},{q:"Cho hàm số f(x)=3x²-12x+5. Tìm hoành độ điểm cực trị.",a:"2",type:"extremum",d:"Cực trị & cực tiểu"},{q:"Cho hàm số f(x)=3x²+6x+2. Tìm hoành độ điểm cực trị.",a:"-1",type:"extremum",d:"Cực trị & cực tiểu"},{q:"Cho hàm số f(x)=4x²-16x+1. Tìm hoành độ điểm cực trị.",a:"2",type:"extremum",d:"Cực trị & cực tiểu"},{q:"Cho hàm số f(x)=4x²+8x+3. Tìm hoành độ điểm cực trị.",a:"-1",type:"extremum",d:"Cực trị & cực tiểu"},{q:"Cho hàm số f(x)=5x²-20x+4. Tìm hoành độ điểm cực trị.",a:"2",type:"extremum",d:"Cực trị & cực tiểu"},{q:"Cho hàm số f(x)=5x²+10x+1. Tìm hoành độ điểm cực trị.",a:"-1",type:"extremum",d:"Cực trị & cực tiểu"},{q:"Cho hàm số f(x)=6x²-12x+2. Tìm hoành độ điểm cực trị.",a:"1",type:"extremum",d:"Cực trị & cực tiểu"},{q:"Cho hàm số f(x)=6x²+24x+5. Tìm hoành độ điểm cực trị.",a:"-2",type:"extremum",d:"Cực trị & cực tiểu"},{q:"Cho hàm số f(x)=7x²-14x+3. Tìm hoành độ điểm cực trị.",a:"1",type:"extremum",d:"Cực trị & cực tiểu"},{q:"Cho hàm số f(x)=7x²+28x+6. Tìm hoành độ điểm cực trị.",a:"-2",type:"extremum",d:"Cực trị & cực tiểu"},{q:"Cho hàm số f(x)=8x²-16x+9. Tìm hoành độ điểm cực trị.",a:"1",type:"extremum",d:"Cực trị & cực tiểu"},{q:"Cho hàm số f(x)=8x²+16x+9. Tìm hoành độ điểm cực trị.",a:"-1",type:"extremum",d:"Cực trị & cực tiểu"},{q:"Cho hàm số f(x)=-x²+4x+1. Tìm hoành độ điểm cực trị.",a:"2",type:"extremum",d:"Cực trị & cực tiểu"},{q:"Cho hàm số f(x)=-x²-6x+2. Tìm hoành độ điểm cực trị.",a:"-3",type:"extremum",d:"Cực trị & cực tiểu"},{q:"Cho hàm số f(x)=-x²+8x-3. Tìm hoành độ điểm cực trị.",a:"4",type:"extremum",d:"Cực trị & cực tiểu"},{q:"Cho hàm số f(x)=-x²-2x+4. Tìm hoành độ điểm cực trị.",a:"-1",type:"extremum",d:"Cực trị & cực tiểu"},{q:"Cho hàm số f(x)=-x²+10x-1. Tìm hoành độ điểm cực trị.",a:"5",type:"extremum",d:"Cực trị & cực tiểu"},{q:"Cho hàm số f(x)=-2x²+8x+1. Tìm hoành độ điểm cực trị.",a:"2",type:"extremum",d:"Cực trị & cực tiểu"},{q:"Cho hàm số f(x)=-2x²-12x+3. Tìm hoành độ điểm cực trị.",a:"-3",type:"extremum",d:"Cực trị & cực tiểu"},{q:"Cho hàm số f(x)=-3x²+12x-2. Tìm hoành độ điểm cực trị.",a:"2",type:"extremum",d:"Cực trị & cực tiểu"},{q:"Cho hàm số f(x)=-3x²-6x+1. Tìm hoành độ điểm cực trị.",a:"-1",type:"extremum",d:"Cực trị & cực tiểu"},{q:"Cho hàm số f(x)=-4x²+16x+2. Tìm hoành độ điểm cực trị.",a:"2",type:"extremum",d:"Cực trị & cực tiểu"},{q:"Cho hàm số f(x)=-4x²-8x+1. Tìm hoành độ điểm cực trị.",a:"-1",type:"extremum",d:"Cực trị & cực tiểu"},{q:"Cho hàm số f(x)=-5x²+20x-3. Tìm hoành độ điểm cực trị.",a:"2",type:"extremum",d:"Cực trị & cực tiểu"},{q:"Cho hàm số f(x)=-5x²-10x+2. Tìm hoành độ điểm cực trị.",a:"-1",type:"extremum",d:"Cực trị & cực tiểu"},{q:"Cho hàm số f(x)=-6x²+12x+4. Tìm hoành độ điểm cực trị.",a:"1",type:"extremum",d:"Cực trị & cực tiểu"},{q:"Cho hàm số f(x)=-6x²-24x+1. Tìm hoành độ điểm cực trị.",a:"-2",type:"extremum",d:"Cực trị & cực tiểu"},{q:"Cho hàm số f(x)=-7x²+14x-5. Tìm hoành độ điểm cực trị.",a:"1",type:"extremum",d:"Cực trị & cực tiểu"},{q:"Cho hàm số f(x)=-7x²-28x+3. Tìm hoành độ điểm cực trị.",a:"-2",type:"extremum",d:"Cực trị & cực tiểu"},{q:"Cho hàm số f(x)=-8x²+16x+1. Tìm hoành độ điểm cực trị.",a:"1",type:"extremum",d:"Cực trị & cực tiểu"},{q:"Cho hàm số f(x)=-8x²-16x+1. Tìm hoành độ điểm cực trị.",a:"-1",type:"extremum",d:"Cực trị & cực tiểu"},{q:"Cho hàm số f(x)=2x²-4x-6. Tìm hoành độ điểm cực trị.",a:"1",type:"extremum",d:"Cực trị & cực tiểu"},{q:"Cho hàm số f(x)=2x²+4x-6. Tìm hoành độ điểm cực trị.",a:"-1",type:"extremum",d:"Cực trị & cực tiểu"},{q:"Cho hàm số f(x)=3x²-6x+1. Tìm hoành độ điểm cực trị.",a:"1",type:"extremum",d:"Cực trị & cực tiểu"},{q:"Cho hàm số f(x)=3x²+6x+1. Tìm hoành độ điểm cực trị.",a:"-1",type:"extremum",d:"Cực trị & cực tiểu"},{q:"Cho hàm số f(x)=4x²-8x+3. Tìm hoành độ điểm cực trị.",a:"1",type:"extremum",d:"Cực trị & cực tiểu"},{q:"Cho hàm số f(x)=4x²+8x+3. Tìm hoành độ điểm cực trị.",a:"-1",type:"extremum",d:"Cực trị & cực tiểu"},{q:"Cho hàm số f(x)=5x²-10x+2. Tìm hoành độ điểm cực trị.",a:"1",type:"extremum",d:"Cực trị & cực tiểu"},{q:"Cho hàm số f(x)=5x²+10x+2. Tìm hoành độ điểm cực trị.",a:"-1",type:"extremum",d:"Cực trị & cực tiểu"},{q:"Cho hàm số f(x)=6x²-24x+7. Tìm hoành độ điểm cực trị.",a:"2",type:"extremum",d:"Cực trị & cực tiểu"},{q:"Cho hàm số f(x)=6x²+24x+7. Tìm hoành độ điểm cực trị.",a:"-2",type:"extremum",d:"Cực trị & cực tiểu"},{q:"Cho hàm số f(x)=7x²-28x+10. Tìm hoành độ điểm cực trị.",a:"2",type:"extremum",d:"Cực trị & cực tiểu"}];
+const basicProblems=[
+{q:"6 × 7 = ?",a:"42",d:"Toán cơ bản"},{q:"144 ÷ 12 = ?",a:"12",d:"Toán cơ bản"},
+{q:"25 + 37 = ?",a:"62",d:"Toán cơ bản"},{q:"2x + 4 = 10. x = ?",a:"3",d:"Toán cơ bản"},
+{q:"3x - 9 = 18. x = ?",a:"9",d:"Toán cơ bản"},{q:"5² + 12 = ?",a:"37",d:"Toán cơ bản"},
+{q:"x² = 49. Nghiệm dương x = ?",a:"7",d:"Toán cơ bản"},{q:"f(x)=2x². f(3)=?",a:"18",d:"Toán cơ bản"}
+];
+
+let selected="all", problems=[], idx=0, answered=false, score=0, streak=0, correct=0;
+
+function pool(){
+  if(selected==="derivative") return derivativeProblems50;
+  if(selected==="extremum") return extremumProblems50;
+  if(selected==="basic") return basicProblems;
+  return [...basicProblems,...derivativeProblems50,...extremumProblems50];
+}
+function name(){
+  return selected==="derivative"?"Đạo hàm":selected==="extremum"?"Tìm cực trị / cực tiểu":selected==="basic"?"Toán cơ bản":"Tất cả";
+}
+function load(){
+  problems=pool(); idx=Math.floor(Math.random()*problems.length); answered=false;
+  document.getElementById("answer").value="";
+  document.getElementById("feedback").textContent="";
+  document.getElementById("feedback").className="feedback";
+  document.getElementById("progress").textContent=`Đề: ${name()} • ${problems.length} câu`;
+  document.getElementById("question").textContent=problems[idx].q;
+  document.getElementById("lessonInfo").textContent=`Đang chọn: ${name()}`;
+}
+function normalize(s){return String(s).toLowerCase().replace(/\s+/g,"").replace(/−/g,"-").replace(/²/g,"^2").replace(/³/g,"^3").replace(/⁴/g,"^4").replace(/⁵/g,"^5");}
+function derivativeEqual(a,b){return normalize(a).replace(/f\'(x)=/g,"").replace(/y\'= /g,"")===normalize(b)}
+
+function keyInput(value){
+  const input=document.getElementById("answer");
+  const start=input.selectionStart ?? input.value.length;
+  const end=input.selectionEnd ?? input.value.length;
+  input.value=input.value.slice(0,start)+value+input.value.slice(end);
+  input.focus();
+  const pos=start+value.length;
+  try{input.setSelectionRange(pos,pos)}catch(e){}
+}
+function keyBackspace(){
+  const input=document.getElementById("answer");
+  const start=input.selectionStart ?? input.value.length;
+  const end=input.selectionEnd ?? input.value.length;
+  if(start!==end){
+    input.value=input.value.slice(0,start)+input.value.slice(end);
+    try{input.setSelectionRange(start,start)}catch(e){}
+  }else if(start>0){
+    input.value=input.value.slice(0,start-1)+input.value.slice(start);
+    try{input.setSelectionRange(start-1,start-1)}catch(e){}
+  }
+  input.focus();
+}
+
+function check(){
+  if(answered)return;
+  const p=problems[idx], input=document.getElementById("answer").value.trim();
+  if(!input)return;
+  const ok=p.type==="derivative"?derivativeEqual(input,p.a):normalize(input)===normalize(p.a);
+  const f=document.getElementById("feedback"); answered=true;
+  if(ok){const pts= p.type==="derivative"?20:p.type==="extremum"?30:10; const add=pts+streak*5;score+=add;streak++;correct++;f.textContent=`✅ Chính xác! +${add} điểm`;f.className="feedback good"}
+  else{streak=0;f.textContent=`❌ Chưa đúng. Đáp án: ${p.a}`;f.className="feedback bad"}
+  update();
+}
+function next(){load()}
+function update(){document.getElementById("score").textContent=score;document.getElementById("streak").textContent=streak;document.getElementById("correct").textContent=correct}
+function resetGame(){score=0;streak=0;correct=0;update();load()}
+document.querySelectorAll(".lesson").forEach(b=>{b.addEventListener("click",()=>{
+  selected=b.dataset.type;
+  document.querySelectorAll(".lesson").forEach(x=>x.classList.remove("active"));
+  b.classList.add("active"); score=0;streak=0;correct=0;update();load();
+});});
+document.getElementById("answer").addEventListener("keydown",e=>{if(e.key==="Enter")check()});
+update();load();
+</script>
+</body></html>
